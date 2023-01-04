@@ -34,7 +34,9 @@ export class MarchingSquare {
     for (let i = 0; i < this.horizontalNodeCount; i++) {
       var col = this.positions[i];
       for (let j = 0; j < this.verticalNodeCount; j++) {
-        col[j] = Math.round((this.noise(i / 10, j / 10, this.dt) + 1) / 2);
+        var val = (this.noise(i / 30, j / 30, this.dt) + 1) / 2;
+        col[j] = Math.round(val);
+        this.drawDot(ctx, this.getPosition(i, j), val);
       }
     }
 
@@ -44,11 +46,6 @@ export class MarchingSquare {
         const e1 = this.positions[i][j + 1];
         const e2 = this.positions[i + 1][j];
         const e3 = this.positions[i + 1][j + 1];
-        this.drawDot(
-          ctx,
-          this.getPosition(i, j),
-          this.positions[i][j] == 1 ? "black" : "white"
-        );
         this.drawSquare(ctx, 8 * e3 + 4 * e2 + 2 * e1 + e0, i, j);
       }
     }
@@ -60,6 +57,9 @@ export class MarchingSquare {
     i: number,
     j: number
   ) {
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+
     let p0: Position = null;
     let p1: Position = null;
 
@@ -125,12 +125,11 @@ export class MarchingSquare {
     return new Position(i * this.size, j * this.size);
   }
 
-  drawDot(ctx: CanvasRenderingContext2D, position: Position, color = "black") {
-    if (color) {
-      ctx.fillStyle = color;
-    }
+  drawDot(ctx: CanvasRenderingContext2D, position: Position, number: number) {
+    ctx.fillStyle = this.calcColor(number);
+
     ctx.beginPath();
-    ctx.arc(position.x, position.y, 1, 0, 2 * Math.PI, true);
+    ctx.arc(position.x, position.y, 4, 0, 2 * Math.PI, true);
     ctx.fill();
   }
 
@@ -143,6 +142,13 @@ export class MarchingSquare {
     ctx.moveTo(position0.x, position0.y);
     ctx.lineTo(position1.x, position1.y);
     ctx.stroke();
-    ctx.fill();
+  }
+  calcColor(val: number): string {
+    var minHue = 240,
+      maxHue = 0;
+    var curPercent = val;
+    var colString =
+      "hsl(" + (curPercent * (maxHue - minHue) + minHue) + ",100%,50%)";
+    return colString;
   }
 }
